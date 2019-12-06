@@ -1,0 +1,133 @@
+/*
+This code isflashed on the arduino governing the stair climbing bot. this code exhibits serial connection with laptop and based on the commands provided by laptop the navigation behaviour is executed.
+
+*/
+
+#include<ros.h>
+#include<std_msgs/Int32.h>
+
+int f_left1 = 2; //set pin numbers
+int f_left2 = 3;
+int f_right1 = 4;
+int f_right2 = 5;
+int b_left1 = 6;
+int b_left2 = 7;
+int b_right1 = 8;
+int b_right2 = 9;
+int sp_pwm = 10;
+int pwm = 11;
+
+ros::NodeHandle nh;
+
+int x = 0;
+
+void messageCb( const std_msgs::Int32& control_msg){
+
+  x = control_msg.data;
+ 
+}
+
+ros::Subscriber<std_msgs::Int32> sub("in_put", &messageCb );
+
+
+void setup() {
+
+  nh.initNode();
+  nh.subscribe(sub);
+ 
+pinMode(f_left1, OUTPUT);  // set the pins to output
+pinMode(f_left2, OUTPUT);
+pinMode(f_right1, OUTPUT);
+pinMode(f_right2, OUTPUT);
+pinMode(b_left1, OUTPUT);
+pinMode(b_left2, OUTPUT);
+pinMode(b_right1, OUTPUT);
+pinMode(b_right2, OUTPUT);
+pinMode(pwm, OUTPUT);
+pinMode(sp_pwm, OUTPUT);
+Serial.begin(9600);
+
+}
+
+void loop() {
+ 
+  if (x == 5)   // FORWARD*/
+     {
+      analogWrite(f_left1, 255);
+      analogWrite(f_left2, 1);
+      digitalWrite(f_right1, LOW);//l
+      digitalWrite(f_right2, HIGH);//h
+      digitalWrite(b_left1, HIGH);
+      digitalWrite(b_left2, LOW);
+      digitalWrite(b_right1, LOW);//l
+      digitalWrite(b_right2, HIGH);//h
+      digitalWrite(pwm, HIGH);
+      analogWrite(sp_pwm, 208);
+      }
+  if (x == 4)   // REVERSE
+     {
+     
+      digitalWrite(f_left1, LOW);
+      digitalWrite(f_left2, HIGH);
+      digitalWrite(f_right1, HIGH);//l
+      digitalWrite(f_right2, LOW);//h
+      digitalWrite(b_left1, LOW);
+      digitalWrite(b_left2, HIGH);
+      digitalWrite(b_right1, HIGH);//l
+      digitalWrite(b_right2, LOW);//h
+      digitalWrite(pwm, HIGH);
+      analogWrite(sp_pwm, 255);
+      }
+
+
+  if (x == 2)  // LEFT
+     {
+      // stop left
+      digitalWrite(f_left1, LOW); ///h
+      digitalWrite(f_left2, HIGH);
+      digitalWrite(b_left1, LOW); //h
+      digitalWrite(b_left2, HIGH);
+      //start right
+      digitalWrite(f_right1, LOW);//l
+      digitalWrite(f_right2, HIGH);//h
+      digitalWrite(b_right1, LOW);//l
+      digitalWrite(b_right2, HIGH);//h
+     
+     
+      digitalWrite(pwm, HIGH);
+      analogWrite(sp_pwm, 255);
+      }
+  if (x == 3) // RIGHT
+     {
+      //stop right
+      digitalWrite(f_right1, HIGH);
+      digitalWrite(f_right2, LOW);
+      digitalWrite(b_right1, HIGH);
+      digitalWrite(b_right2, LOW); //h
+      // start left
+      analogWrite(f_left1, 255);
+      analogWrite(f_left2, 1);
+      digitalWrite(b_left1, HIGH);
+      digitalWrite(b_left2, LOW);
+     
+     
+      digitalWrite(pwm, HIGH);
+      analogWrite(sp_pwm, 255);
+      }
+  if (x == 0) // STOP
+     {
+      digitalWrite(f_left1, HIGH); ///h
+      digitalWrite(f_left2, LOW);
+      digitalWrite(f_right1, LOW);
+      digitalWrite(f_right2, LOW);
+      digitalWrite(b_left1, HIGH); //h
+      digitalWrite(b_left2, LOW);
+      digitalWrite(b_right1, LOW);
+      digitalWrite(b_right2, HIGH); //h
+      digitalWrite(pwm, LOW);
+      analogWrite(sp_pwm, 0);
+      }
+  nh.spinOnce();
+  delay(1);   
+
+  }
